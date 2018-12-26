@@ -116,11 +116,34 @@ ChartInternal.prototype.generateGetBarPoints = function (barIndices, isSub) {
         ];
     };
 };
-ChartInternal.prototype.isWithinBar = function (mouse, that) {
-    var box = that.getBoundingClientRect(),
-        seg0 = that.pathSegList.getItem(0), seg1 = that.pathSegList.getItem(1),
-        x = Math.min(seg0.x, seg1.x), y = Math.min(seg0.y, seg1.y),
-        w = box.width, h = box.height, offset = 2,
-        sx = x - offset, ex = x + w + offset, sy = y + h + offset, ey = y - offset;
-    return sx < mouse[0] && mouse[0] < ex && ey < mouse[1] && mouse[1] < sy;
+ChartInternal.prototype.isWithinBar = function (mouse, that, key) {
+    var $$ = this;
+
+    if (typeof $$.caches === 'undefined') {
+        $$.caches = {};
+    }
+    if (typeof $$.caches['isWithinBar-bounds'] === 'undefined') {
+        $$.caches['isWithinBar-bounds'] = {};
+    }
+    var bounds = (typeof key !== 'undefined') ? $$.caches['isWithinBar-bounds'][key] : undefined;
+
+    if (typeof bounds === 'undefined') {
+        var box = that.getBoundingClientRect(),
+            seg0 = that.pathSegList.getItem(0), seg1 = that.pathSegList.getItem(1),
+            x = Math.min(seg0.x, seg1.x), y = Math.min(seg0.y, seg1.y),
+            w = box.width, h = box.height, offset = 2;
+
+        bounds = {
+            sx: x - offset,
+            ex: x + w + offset,
+            sy: y + h + offset,
+            ey: y - offset,
+        };
+
+        if (typeof key !== 'undefined') {
+            $$.caches['isWithinBar-bounds'][key] = bounds;
+        }
+    }
+
+    return bounds.sx < mouse[0] && mouse[0] < bounds.ex && bounds.ey < mouse[1] && mouse[1] < bounds.sy;
 };

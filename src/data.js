@@ -346,8 +346,20 @@ ChartInternal.prototype.findClosest = function (values, pos) {
     values.filter(function (v) {
         return v && $$.isBarType(v.id);
     }).forEach(function (v) {
-        var shape = $$.main.select('.' + CLASS.bars + $$.getTargetSelectorSuffix(v.id) + ' .' + CLASS.bar + '-' + v.index).node();
-        if (!closest && $$.isWithinBar($$.d3.mouse(shape), shape)) {
+        if (typeof $$.caches === 'undefined') {
+            $$.caches = {};
+        }
+        if (typeof $$.caches['findClosest-select'] === 'undefined') {
+            $$.caches['findClosest-select'] = {};
+        }
+
+        var key = '.' + CLASS.bars + $$.getTargetSelectorSuffix(v.id) + ' .' + CLASS.bar + '-' + v.index;
+        var shape = $$.caches['findClosest-select'][key];
+        if (typeof shape === 'undefined') {
+            shape = $$.main.select('.' + CLASS.bars + $$.getTargetSelectorSuffix(v.id) + ' .' + CLASS.bar + '-' + v.index).node();
+            $$.caches['findClosest-select'][key] = shape;
+        }
+        if (!closest && $$.isWithinBar(pos, shape, key)) {
             closest = v;
         }
     });
